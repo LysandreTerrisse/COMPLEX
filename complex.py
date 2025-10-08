@@ -96,6 +96,37 @@ def generer_graphe(n, p):
     return V, E
 
 
+"""
+Pour montrer que l'algorithme glouton n'est pas optimal,
+il suffit de regarder ce contre-exemple :
+    0--1--2--3--4
+L'algorithme glouton commence par enlever un sommet de degré maximal
+(par exemple le sommet 2) ainsi que ses arêtes. On obtien ainsi :
+    0--1  3--4
+Ensuite, l'algorithme se répète. On peut par exemple obtenir comme
+solution la couverture {1, 2, 3}. Cependant, cette couverture n'est
+pas optimale, puisqu'il existe la couverture {1, 3} qui est plus petite.
+Dans ce cas, l'algorithme renvoie une solution 3/2 fois plus grande
+que nécessaire. Ce n'est donc pas une 3/2-approximation.
+
+De même, pour cet exemple :
+    0--1--2--3--4--5--6
+L'algorithme peut renvoyer {1, 2, 3, 4, 5} au lieu de {1, 3, 5}.
+Ce n'est donc pas une 5/3-approximation.
+
+Et pour celui-ci :
+    0--1--2--3--4--5--6--7--8
+L'algorithme peut renvoyer {1, 2, 3, 4, 5, 6, 7} au lieu de {1, 3, 5, 7}.
+Ce n'est donc pas une 7/4 approximation.
+
+Ainsi, pour tout n>=2, ce n'est pas une (2n - 1)/(n+1) approximation.
+À la limite, on n'obtient que ce n'est pas une r-approximation pour r<2.
+"""
+
+"""
+
+"""
+
 V, E = lire_instance('exempleinstance.txt')
 V2, E2 = supprimer_sommets(V, E, [0])
 print(V, E)
