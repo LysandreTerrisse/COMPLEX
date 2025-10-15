@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from random import random
 
 """
@@ -96,6 +97,17 @@ def generer_graphe(n, p):
     return V, E
 
 
+def algo_glouton(V, E):
+    C = []
+    W = sommet_degre_maximal(V,E)
+    while(W != None):
+        #print(W)
+        C += [W]
+        V,E = supprimer_sommet(V,E,W)
+        W = sommet_degre_maximal(V,E)
+        #print(V,E)
+    return C
+
 """
 Pour montrer que l'algorithme glouton n'est pas optimal,
 il suffit de regarder ce contre-exemple :
@@ -134,3 +146,6 @@ print(V2, E2)
 print(degres(V, E))
 print(sommet_degre_maximal(V, E))
 print(generer_graphe(5, 0.5))
+
+print("####", V,E)
+print(algo_glouton(V,E))
