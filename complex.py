@@ -1,5 +1,7 @@
-from asyncio.windows_events import NULL
 from random import random
+from time import time
+import matplotlib.pyplot as plt
+import numpy as np
 
 """
 Nombre de sommets
@@ -97,17 +99,6 @@ def generer_graphe(n, p):
     return V, E
 
 
-def algo_glouton(V, E):
-    C = []
-    W = sommet_degre_maximal(V,E)
-    while(W != None):
-        #print(W)
-        C += [W]
-        V,E = supprimer_sommet(V,E,W)
-        W = sommet_degre_maximal(V,E)
-        #print(V,E)
-    return C
-
 """
 Pour montrer que l'algorithme glouton n'est pas optimal,
 il suffit de regarder ce contre-exemple :
@@ -131,13 +122,113 @@ Et pour celui-ci :
 L'algorithme peut renvoyer {1, 2, 3, 4, 5, 6, 7} au lieu de {1, 3, 5, 7}.
 Ce n'est donc pas une 7/4 approximation.
 
-Ainsi, pour tout n>=2, ce n'est pas une (2n - 1)/(n+1) approximation.
+Ainsi, pour tout n>=2, ce n'est pas une (1+2*n)/(n+1) approximation.
 À la limite, on n'obtient que ce n'est pas une r-approximation pour r<2.
 """
 
-"""
+def algo_couplage(V, E):
+    C = []
+    for u in V:
+        for v in E[u]:
+            if u not in C and v not in C:
+                C += [u, v]
+    return C
 
-"""
+def algo_glouton(V, E):
+    C = []
+    W = sommet_degre_maximal(V,E)
+    while(W != None):
+        #print(W)
+        C += [W]
+        V,E = supprimer_sommet(V,E,W)
+        W = sommet_degre_maximal(V,E)
+        #print(V,E)
+    return C
+
+# Question 3.3
+
+def comparer_methodes():
+    taille_algo_couplage = np.zeros((100, 100))
+    taille_algo_glouton  = np.zeros((100, 100))
+    t_algo_couplage      = np.zeros((100, 100))
+    t_algo_glouton       = np.zeros((100, 100))
+    for n in range(100):
+        for p in range(100):
+            V, E = generer_graphe(n, p/100)
+            # On calcule le temps de algo_couplage et la taille du couplage renvoyé
+            t0 = time()
+            taille_algo_couplage[n, p] = len(algo_couplage(V, E))
+            t1 = time()
+            t_algo_couplage[n, p] = t1 - t0
+            # On calcule le temps de algo_glouton et la taille du couplage renvoyé
+            t0 = time()
+            taille_algo_glouton[n, p] = len(algo_glouton(V, E))
+            t1 = time()
+            t_algo_glouton[n, p] = t1 - t0
+
+    #Pour algo_couplage
+    #Afficher la longueur de la solution selon n, avec p fixé
+    for p in range(0, 100, 20):
+        plt.plot(range(100), taille_algo_couplage[:, p], label=f'p={p}')
+    plt.xlabel('n')
+    plt.ylabel('Longueur de la couverture')
+    plt.legend()
+    plt.show()
+    #Afficher la longueur de la solution selon p, avec n fixé
+    for n in range(10, 100, 20):
+        plt.plot(range(100), taille_algo_couplage[n], label=f'n={n}')
+    plt.xlabel('p')
+    plt.ylabel('Longueur de la couverture')
+    plt.legend()
+    plt.show()
+    #Afficher le temps d'exécution selon n, avec p fixé
+    for p in range(0, 100, 20):
+        plt.plot(range(100), t_algo_couplage[:, p], label=f'p={p}')
+    plt.xlabel('n')
+    plt.ylabel("Temps d'exécution")
+    plt.legend()
+    plt.show()
+    #Afficher le temps d'exécution selon p, avec n fixé
+    for n in range(10, 100, 20):
+        plt.plot(range(100), t_algo_couplage[n], label=f'n={n}')
+    plt.xlabel('p')
+    plt.ylabel("Temps d'exécution")
+    plt.legend()
+    plt.show()
+    
+    nline = np.linspace(0, 100, 101)
+    pline = np.linspace(0, 100, 101)
+    valeur = 
+
+def premiere_arete(V, E):
+    for u in V:
+        for v in E[u]:
+            return (u, v)
+
+def branchement(V, E):
+    #S'il n'y a pas d'arêtes, on renvoie la couverture vide
+    if all(liste==[] for liste in E.values()):
+        return []
+    else:
+        u, v = premiere_arete(V, E)
+        # On considère le cas où l'on supprime u et on le met dans la couverture
+        V1, E1 = supprimer_sommet(V, E, u)
+        C1 = branchement(V1, E1) + [u]
+        # On considère le cas où l'on supprime v et on le met dans la couverture
+        V2, E2 = supprimer_sommet(V, E, v)
+        C2 = branchement(V2, E2) + [v]
+        # On renvoie la couverture minimale parmi les deux
+        return C1 if len(C1)<len(C2) else C2
+
+
+
+
+
+
+
+#comparer_methodes()
+
+
 
 V, E = lire_instance('exempleinstance.txt')
 V2, E2 = supprimer_sommets(V, E, [0])
@@ -146,6 +237,4 @@ print(V2, E2)
 print(degres(V, E))
 print(sommet_degre_maximal(V, E))
 print(generer_graphe(5, 0.5))
-
-print("####", V,E)
-print(algo_glouton(V,E))
+print(branchement(V, E))
