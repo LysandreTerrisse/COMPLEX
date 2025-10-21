@@ -2,6 +2,7 @@ from random import random
 from time import time
 import matplotlib.pyplot as plt
 import numpy as np
+from mpl_toolkits.mplot3d import axes3d
 
 """
 Nombre de sommets
@@ -138,11 +139,9 @@ def algo_glouton(V, E):
     C = []
     W = sommet_degre_maximal(V,E)
     while(W != None):
-        #print(W)
         C += [W]
         V,E = supprimer_sommet(V,E,W)
         W = sommet_degre_maximal(V,E)
-        #print(V,E)
     return C
 
 # Question 3.3
@@ -196,9 +195,12 @@ def comparer_methodes():
     plt.legend()
     plt.show()
     
-    nline = np.linspace(0, 100, 101)
-    pline = np.linspace(0, 100, 101)
-    valeur = 
+    for data in [taille_algo_couplage, taille_algo_glouton, t_algo_couplage, t_algo_glouton]:
+        X, Y = np.meshgrid(range(100), range(100))
+        plt.figure().add_subplot(projection='3d').plot_surface(X.T, Y.T, data, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8, alpha=0.3)
+        plt.xlabel('n')
+        plt.ylabel('p')
+        plt.show()
 
 def premiere_arete(V, E):
     for u in V:
@@ -220,16 +222,6 @@ def branchement(V, E):
         # On renvoie la couverture minimale parmi les deux
         return C1 if len(C1)<len(C2) else C2
 
-
-
-
-
-
-
-#comparer_methodes()
-
-
-
 V, E = lire_instance('exempleinstance.txt')
 V2, E2 = supprimer_sommets(V, E, [0])
 print(V, E)
@@ -238,3 +230,5 @@ print(degres(V, E))
 print(sommet_degre_maximal(V, E))
 print(generer_graphe(5, 0.5))
 print(branchement(V, E))
+
+comparer_methodes()
