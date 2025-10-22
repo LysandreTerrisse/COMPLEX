@@ -194,7 +194,7 @@ def comparer_methodes():
     plt.ylabel("Temps d'exécution")
     plt.legend()
     plt.show()
-    
+
     for data in [taille_algo_couplage, taille_algo_glouton, t_algo_couplage, t_algo_glouton]:
         X, Y = np.meshgrid(range(100), range(100))
         plt.figure().add_subplot(projection='3d').plot_surface(X.T, Y.T, data, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8, alpha=0.3)
@@ -202,10 +202,12 @@ def comparer_methodes():
         plt.ylabel('p')
         plt.show()
 
+
 def premiere_arete(V, E):
     for u in V:
         for v in E[u]:
             return (u, v)
+
 
 def branchement(V, E):
     #S'il n'y a pas d'arêtes, on renvoie la couverture vide
@@ -222,6 +224,53 @@ def branchement(V, E):
         # On renvoie la couverture minimale parmi les deux
         return C1 if len(C1)<len(C2) else C2
 
+
+def evaluer_branchement():
+    taille = np.zeros((20, 5))
+    t      = np.zeros((20, 5))
+    for n in range(20):
+        for i, p in enumerate(np.linspace(0, 1, 5)):
+            V, E = generer_graphe(n, p)
+            t0 = time()
+            taille[n, i] = len(branchement(V, E))
+            t1 = time()
+            t[n, i] = t1 - t0
+
+    for j, p in enumerate(np.linspace(0, 1, 5)):
+        plt.plot(range(20), t[:, j], label=f'p={p}')
+    plt.xlabel('n')
+    plt.ylabel("Temps d'exécution")
+    plt.legend()
+    plt.show()
+
+    for j, p in enumerate(np.linspace(0, 1, 5)):
+        plt.plot(range(20), taille[:, j], label=f'p={p}')
+    plt.xlabel('n')
+    plt.ylabel("Taille de la couverture")
+    plt.legend()
+    plt.show()
+
+
+    taille = []
+    t      = []
+    for n in range(1, 20):
+        V, E = generer_graphe(n, 1/np.sqrt(n))
+        t0 = time()
+        taille.append(len(branchement(V, E)))
+        t1 = time()
+        t.append(t1 - t0)
+
+    plt.plot(range(1, 20), t)
+    plt.xlabel('n (et p=sqrt(n))')
+    plt.ylabel("Temps d'exécution")
+    plt.show()
+
+    plt.plot(range(1, 20), taille)
+    plt.xlabel('n (et p=sqrt(n))')
+    plt.ylabel("Taille de la couverture")
+    plt.show()
+
+
 V, E = lire_instance('exempleinstance.txt')
 V2, E2 = supprimer_sommets(V, E, [0])
 print(V, E)
@@ -231,4 +280,54 @@ print(sommet_degre_maximal(V, E))
 print(generer_graphe(5, 0.5))
 print(branchement(V, E))
 
-comparer_methodes()
+"""
+Soit G = (V, E) un graphe, M un couplage de G, et C une couverture de G.
+1)
+
+Puisque C est une couverture de G, alors elle couvre toutes les arêtes de G. Donc, en comptant la somme des degrés de C, on compte au moins une fois chaque arête de G. Donc la somme des degrés de C est au moins égale à m :
+    m \leq \sum_{c \in C} d(c) \leq \sum_{c \in C} \Delta = \Delta \sum_{c \in C} 1 = \Delta * |C|
+
+Donc |C| \geq \frac{m}{\Delta} et puisque |C| est entier, alors |C| \geq \lceil \frac{m}{\Delta} \rceil.
+
+2) Puisque C est une couverture de G, elle couvre toutes les arêtes de G, y compris les arêtes de M. C contient donc, pour chaque arête de M, une extrémité de cette arête. Ces extrémités sont distinctes puisque M est un couplage. C admet donc au moins |M| éléments.
+
+3) Puisque G contient une couverture de taille |C|, alors il y a |C|
+
+
+
+Puisque C est une couverture, alors elle couvre toutes les arêtes de E. Donc E \subseteq C \times V. Ainsi, |E| <= |C| * |V|.
+
+sqrt(|E|) = ((2n - 1) - sqrt((2n - 1)² - 8m)) / 2
+|E| = ((2n - 1) - sqrt((2n - 1)² - 8m))² / 4
+|E| = ((2n - 1)² - 2 * (2n - 1) * sqrt((2n - 1)² - 8m) + ((2n - 1)² - 8m)) / 4
+|E| = (2 * (2n - 1)² - 2 * (2n - 1) * sqrt((2n - 1)² - 8m) - 8m) / 4
+
+(2n - 1)² - (2n - 1)² - 8m = 8m
+
+
+Puisque |E| <= |V|², alors |V| >= sqrt(|E|).
+
+
+Brouillon : Puisque M est un couplage, alors chaque arête est indépendante, donc chaque extrémité est différente. En prenant au hazard une extrémité de chaque arête de M, on obtient un couplage.
+
+Puisque C est une couverture, alors aucun sommet n'est relié entre eux. En choisissant pour chaque sommet de C au plus une arête incidente, on obtient un couplage.
+
+Pour chaque arête de M, on a deux extrémités. Puisque M est un couplage, toutes ses arêtes sont indépendantes, et donc on a 2*|M| extrémités. Mais, puisque le nombre d'extrémités ne peut pas dépasser le nombre de sommets du graphe, alors 2*|M| <= |V| et donc |M| <= |V|/2.
+
+On sait que la taille de E (donc m) est égale à la moitié de la somme des degrés du graphe :
+    m = \frac{1}{2} \sum_{v \in V} d(v)
+      \leq \frac{1}{2} \sum_{v \in V} \Delta
+      \leq \frac{1}{2} \Delta \sum_{v \in V} 1
+      \leq \frac{1}{2} \Delta * |V|
+
+On obtient donc :
+    2 * |V| \geq \frac{m}{\Delta}
+
+On sait que |E| <= |V| * ∆
+
+"""
+
+
+#comparer_methodes()
+#evaluer_branchement()
+
