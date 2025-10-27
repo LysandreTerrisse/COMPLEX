@@ -42,7 +42,7 @@ def lire_instance(nom_fichier):
         n = int(fd.readline())
         # On extrait les sommets
         fd.readline()
-        V = [int(fd.readline()) for i in range(5)]
+        V = [int(fd.readline()) for i in range(n)]
         # On extrait le nombre d'arêtes
         fd.readline()
         m = int(fd.readline())
@@ -300,7 +300,78 @@ def proxy_borne_inf(V, E):
 def proxy_glouton(V, E):
     return len(algo_glouton(V, E))
 
+# Question 4.3.1
+def branchement_ameliore(V, E):
+    #S'il n'y a pas d'arêtes, on renvoie la couverture vide
+    if all(liste==[] for liste in E.values()):
+        return []
+    else:
+        u, v = premiere_arete(V, E)
+        # On considère le cas où l'on ne prend pas v (on le supprime car on ne veut pas le prendre) et où l'on prend tous les voisins de v (on les supprime car on les prend)
+        V1, E1 = supprimer_sommets(V, E, [v] + E[v])
+        C1 = branchement(V1, E1) + E[v]
+        # On considère le cas où l'on ne prend pas u (on le supprime car on ne veut pas le prendre) et où l'on prend tous les voisins de u (on les supprime car on les prend)
+        V2, E2 = supprimer_sommets(V, E, [u] + E[u])
+        C2 = branchement(V2, E2) + E[u]
+        # On renvoie la couverture minimale parmi les deux
+        return C1 if len(C1)<len(C2) else C2
 
+#Question 4.3.2
+def branchement_doublement_ameliore(V, E):
+    #S'il n'y a pas d'arêtes, on renvoie la couverture vide
+    if all(liste==[] for liste in E.values()):
+        return []
+    else:
+        u = sommet_degre_maximal(V, E)
+        v = E[u][0]
+        # On considère le cas où l'on ne prend pas v (on le supprime car on ne veut pas le prendre) et où l'on prend tous les voisins de v (on les supprime car on les prend)
+        V1, E1 = supprimer_sommets(V, E, [v] + E[v])
+        C1 = branchement(V1, E1) + E[v]
+        # On considère le cas où l'on ne prend pas u (on le supprime car on ne veut pas le prendre) et où l'on prend tous les voisins de u (on les supprime car on les prend)
+        V2, E2 = supprimer_sommets(V, E, [u] + E[u])
+        C2 = branchement(V2, E2) + E[u]
+        # On renvoie la couverture minimale parmi les deux
+        return C1 if len(C1)<len(C2) else C2
+
+"""
+Question 4.3.3
+
+Soit G un graphe, et soit C* une couverture optimale contenant un sommet u de degré 1. Puisque u est degré 1, il est relié à exactement un autre sommet v. Considérons C' = (C* \setminus \{u\}) \cup \{v\}. Cet ensemble a la même taille que C*. De plus, la seule arête qui peut ne plus être couverte en enlevant u est de nouveau couverte par l'ajout de v. C'est donc une couverture, qui est optimale et qui ne contient pas u.
+"""
+
+# Question 4.3.3
+def branchement_test_degre(V, E):
+    #S'il n'y a pas d'arêtes, on renvoie la couverture vide
+    if all(liste==[] for liste in E.values()):
+        return []
+    else:
+        u, v = premiere_arete(V, E)
+        
+        # Si u est de degré 1, on ne branche que sur v
+        if len(E[u])==1:
+            V2, E2 = supprimer_sommet(V, E, v)
+            return branchement(V2, E2) + [v]
+        # Si v est de degré 1, on ne branche que sur u
+        if len(E[v])==1:
+            V1, E1 = supprimer_sommet(V, E, u)
+            return branchement(V1, E1) + [u]
+        
+        # On considère le cas où l'on supprime u et on le met dans la couverture
+        V1, E1 = supprimer_sommet(V, E, u)
+        C1 = branchement(V1, E1) + [u]
+        # On considère le cas où l'on supprime v et on le met dans la couverture
+        V2, E2 = supprimer_sommet(V, E, v)
+        C2 = branchement(V2, E2) + [v]
+        # On renvoie la couverture minimale parmi les deux
+        return C1 if len(C1)<len(C2) else C2
+
+# Question 4.4.2
+def proxy_m(V, E):
+    # Lorsque choisir u donne un nombre d'arêtes m1, et que choisir v donne un nombre d'arêtes m2, avec m1 < m2, il est souvent préférable de brancher sur u, donc la proxy/heuristique serait de minimiser m. (c'est aussi équivalent à brancher sur le sommet de degré maximal parmi u et v).
+    return nb_aretes(V, E)
+
+def proxy_random(V, E):
+    return random()
 
 V, E = lire_instance('exempleinstance.txt')
 V2, E2 = supprimer_sommets(V, E, [0])
@@ -310,6 +381,7 @@ print(degres(V, E))
 print(sommet_degre_maximal(V, E))
 print(generer_graphe(5, 0.5))
 print(branchement(V, E))
+print(branchement_test_degre(V, E))
 
 
 
@@ -364,7 +436,8 @@ On sait que |E| <= |V| * ∆
 
 #comparer_methodes()
 #evaluer(branchement)
-evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_couplage))
-evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_borne_inf))
-evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_glouton))
-
+#evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_couplage))
+#evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_borne_inf))
+#evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_glouton))
+#evaluer(branchement_ameliore)
+#evaluer(branchement_doublement_ameliore)
