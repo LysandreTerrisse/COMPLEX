@@ -87,7 +87,6 @@ def sommet_degre_maximal(V, E):
             v_maximal = v
     return v_maximal
 
-
 # Prend n>0, une probabilité p, et génère un graphe à n sommets avec des sommets ayant une probabilité p d'exister
 def generer_graphe(n, p):
     V = list(range(n))
@@ -225,14 +224,14 @@ def branchement(V, E):
         return C1 if len(C1)<len(C2) else C2
 
 
-def evaluer_branchement():
+def evaluer(f):
     taille = np.zeros((20, 5))
     t      = np.zeros((20, 5))
     for n in range(20):
         for i, p in enumerate(np.linspace(0, 1, 5)):
             V, E = generer_graphe(n, p)
             t0 = time()
-            taille[n, i] = len(branchement(V, E))
+            taille[n, i] = len(f(V, E))
             t1 = time()
             t[n, i] = t1 - t0
 
@@ -256,7 +255,7 @@ def evaluer_branchement():
     for n in range(1, 20):
         V, E = generer_graphe(n, 1/np.sqrt(n))
         t0 = time()
-        taille.append(len(branchement(V, E)))
+        taille.append(len(f(V, E)))
         t1 = time()
         t.append(t1 - t0)
 
@@ -270,6 +269,38 @@ def evaluer_branchement():
     plt.ylabel("Taille de la couverture")
     plt.show()
 
+def branchement_avec_proxy(V, E, proxy):
+    if all(liste==[] for liste in E.values()):
+        return []
+    else:
+        u, v = premiere_arete(V, E)
+        # On considère le cas où l'on supprime u et on le met dans la couverture
+        V1, E1 = supprimer_sommet(V, E, u)
+        # On considère le cas où l'on supprime v et on le met dans la couverture
+        V2, E2 = supprimer_sommet(V, E, v)
+        # On répète récursivement là où la proxy/heuristique est la plus prometteuse
+        return branchement_avec_proxy(V1, E1, proxy) + [u] if proxy(V1, E1)<proxy(V2, E2) else branchement_avec_proxy(V2, E2, proxy) + [v]
+        
+def proxy_couplage(V, E):
+    return len(algo_couplage(V, E))
+
+def nb_aretes(V, E):
+    return sum(len(E[v]) for v in V)/2
+
+def degre_maximal(V, E):
+    return max(len(E[v]) for v in V)
+
+def proxy_borne_inf(V, E):
+    n, m, delta = len(V), nb_aretes(V, E), degre_maximal(V, E)
+    b1 = np.ceil(m / degre_maximal(V, E)) if delta > 0 else 0
+    b2 = proxy_couplage(V, E)
+    b3 = (2*n - 1 - np.sqrt((2*n - 1)**2 - 8*m))/ 2
+    return max(b1, b2, b3)
+
+def proxy_glouton(V, E):
+    return len(algo_glouton(V, E))
+
+
 
 V, E = lire_instance('exempleinstance.txt')
 V2, E2 = supprimer_sommets(V, E, [0])
@@ -279,6 +310,9 @@ print(degres(V, E))
 print(sommet_degre_maximal(V, E))
 print(generer_graphe(5, 0.5))
 print(branchement(V, E))
+
+
+
 
 """
 Soit G = (V, E) un graphe, M un couplage de G, et C une couverture de G.
@@ -329,5 +363,8 @@ On sait que |E| <= |V| * ∆
 
 
 #comparer_methodes()
-#evaluer_branchement()
+#evaluer(branchement)
+evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_couplage))
+evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_borne_inf))
+evaluer(lambda V, E: branchement_avec_proxy(V, E, proxy_glouton))
 
