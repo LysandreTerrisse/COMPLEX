@@ -321,6 +321,21 @@ def branchement_test_degre(V, E):
         return C1 if len(C1)<len(C2) else C2
 
 
+# Question 4.4.1
+def rapport_approximation():
+    rapport_couplage = np.zeros((20, 5))
+    rapport_glouton = np.zeros((20, 5))
+    for n in range(20):
+        for p in range(5):
+            V, E = generer_graphe(n, p/4)
+            taille_optimale = len(branchement(V, E))
+            rapport_couplage[n, p] = len(algo_couplage(V, E))/taille_optimale if taille_optimale != 0 else 1
+            rapport_glouton[n, p] = len(algo_glouton(V, E))/taille_optimale if taille_optimale != 0 else 1
+
+    graphique(rapport_couplage, "Rapport d'approximation du couplage", p_values=range(5))
+    graphique(rapport_glouton, "Rapport d'approximation du glouton", p_values=range(5))
+
+
 V, E = lire_instance('exempleinstance.txt')
 print(branchement(V, E))
 print(branchement_avec_borne(V, E))
@@ -341,3 +356,5 @@ print(branchement_test_degre(V, E))
 #evaluer(branchement_doublement_ameliore)
 # graphiques pour la question 4.3.3
 #evaluer(branchement_test_degre)
+# graphiques pour la question 4.4.1
+#rapport_approximation()
