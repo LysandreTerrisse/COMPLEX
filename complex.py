@@ -307,9 +307,9 @@ def branchement_ameliore(V, E):
         return []
     else:
         u, v = premiere_arete(V, E)
-        # On considère le cas où l'on ne prend pas v (on le supprime car on ne veut pas le prendre) et où l'on prend tous les voisins de v (on les supprime car on les prend)
-        V1, E1 = supprimer_sommets(V, E, [v] + E[v])
-        C1 = branchement(V1, E1) + E[v]
+        # On considère le cas où l'on supprime u et on le met dans la couverture
+        V1, E1 = supprimer_sommet(V, E, u)
+        C1 = branchement(V1, E1) + [u]
         # On considère le cas où l'on ne prend pas u (on le supprime car on ne veut pas le prendre) et où l'on prend tous les voisins de u (on les supprime car on les prend)
         V2, E2 = supprimer_sommets(V, E, [u] + E[u])
         C2 = branchement(V2, E2) + E[u]
@@ -324,9 +324,9 @@ def branchement_doublement_ameliore(V, E):
     else:
         u = sommet_degre_maximal(V, E)
         v = E[u][0]
-        # On considère le cas où l'on ne prend pas v (on le supprime car on ne veut pas le prendre) et où l'on prend tous les voisins de v (on les supprime car on les prend)
-        V1, E1 = supprimer_sommets(V, E, [v] + E[v])
-        C1 = branchement(V1, E1) + E[v]
+        # On considère le cas où l'on supprime u et on le met dans la couverture
+        V1, E1 = supprimer_sommet(V, E, u)
+        C1 = branchement(V1, E1) + [u]
         # On considère le cas où l'on ne prend pas u (on le supprime car on ne veut pas le prendre) et où l'on prend tous les voisins de u (on les supprime car on les prend)
         V2, E2 = supprimer_sommets(V, E, [u] + E[u])
         C2 = branchement(V2, E2) + E[u]
