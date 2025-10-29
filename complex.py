@@ -1,4 +1,5 @@
 from random import random
+from random import choice
 from time import time
 import matplotlib.pyplot as plt
 import numpy as np
@@ -343,6 +344,17 @@ print(branchement_ameliore(V, E))
 print(branchement_doublement_ameliore(V, E))
 print(branchement_test_degre(V, E))
 
+# Question 4.4.2 
+# Fonction qui crée une couverture en choisissant aléatoirement un sommet
+def aleatoire(V, E):
+    #S'il n'y a pas d'arêtes, on renvoie la couverture vide
+    if all(liste==[] for liste in E.values()):
+        return []
+    else:
+        u = choice(V)
+        V1, E1 = supprimer_sommet(V, E, u)
+        C = aleatoire(V1, E1) + [u]
+        return C
 
 # graphiques pour la question 3.3
 #comparer_methodes()
